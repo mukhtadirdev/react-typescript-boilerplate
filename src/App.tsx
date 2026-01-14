@@ -1,57 +1,110 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
+interface user {
+  "id": Number,
+  "name": string,
+  "username": string,
+  "email": string,
+  "address": {
+    "street": string,
+    "suite": string,
+    "city": string,
+    "zipcode": string,
+    "geo": {
+      "lat": string,
+      "lng": string
+    }
+  },
+  "phone": string,
+  "website": string
+  "company": {
+    "name": string,
+    "catchPhrase": string,
+    "bs": string,
+  }
+}
+
 function Home() {
-  const [count, setCount] = useState(0)
+  const [users, setUsers] = useState<user[] | undefined>([])
+  const URL: string = "https://jsonplaceholder.typicode.com/users"
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(URL)
+      const data = await response.json()
+      setUsers(() => data.sort((a: user, b: user) => a.name.localeCompare(b.name)))
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React + TypeScript</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <table>
+        <th>Name</th>
+        <th>Email</th>
+        <th>City</th>
+        <th>Company</th>
+        <tbody>
+          {
+            users?.map(ele => <tr>
+              <td>{ele.name}</td>
+              <td>{ele.email}</td>
+              <td>{ele.address?.city}</td>
+              <td>{ele.company?.name}</td>
+            </tr>)
+          }
+        </tbody>
+
+      </table>
+
     </>
   )
 }
+interface newData {
+  name :string
+  email :string
+  city :string
+  company :string
+  SetStateAction : void
+}
+function UserPage() {
+  const [userData, setUsersData] = useState<newData| undefined>({
+    name: '', email: "", city: "", company: ""
+  })
 
-function About() {
-  return (
-    <div>
-      <h1>About</h1>
-      <p>This is a React boilerplate with TypeScript and React Router.</p>
-      <Link to="/">Go back to Home</Link>
-    </div>
-  )
+  const handleSubmit = (e:Event) => {
+    console.log(e.target.name || null)
+  }
+  const handleChange = (e:HTMLInputElement) => {
+    setUsersData(()=>[e.target.name] : e.target.value)
+}
+return (
+  <form>
+    <input type="text" name="name" onChange={(e) => handleChange(e)} placeholder='Name' />
+    <input type="Email" name='email' onChange={(e) => handleChange(e)} placeholder='Email' />
+    <input type="text" name='city' onChange={(e) => handleChange(e)} placeholder='city' />
+    <input type="text" name='company' onChange={(e) => handleChange(e)} placeholder='company' />
+    <button type='submit' onClick={(e:HTMLButtonElement) => handleSubmit(e)}> ADD</button>
+  </form>
+)
 }
 
 function App() {
   return (
     <div className="App">
       <nav>
-        <Link to="/">Home</Link> | <Link to="/about">About</Link>
+        <Link to="/">Home</Link> | <Link to="/userPage">UserPage</Link>
       </nav>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
+        <Route path="/userPage" element={<UserPage />} />
       </Routes>
     </div>
   )
